@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import faiss
-import openai
+from transformers import pipeline
 import tempfile
 from PyPDF2 import PdfReader
 import io
@@ -65,13 +65,10 @@ def get_keywords(file_paths): #这里的重点是，对每一个file做尽可能
     return keywords_list
 
 
-def get_completion_from_messages(messages, model="gpt-4-1106-preview", temperature=0):
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=messages,
-            temperature=temperature, # this is the degree of randomness of the model's output
-        )
-        return response.choices[0].message["content"]
+def get_completion_from_messages(messages, model="Mistral-7B-Instruct-v0.1-GGUF", temperature=0):
+    generator = pipeline('text-generation', model=model)
+    response = generator(messages[-1]["content"], max_length=150, temperature=temperature)
+    return response[0]['generated_text']
 
 def genarating_outline(keywords, num_lessons,language):
     system_message = 'You are a great AI teacher and linguist, skilled at create course outline based on summarized knowledge materials.'
